@@ -10,7 +10,7 @@ Performance strategy (targets: remote PostgreSQL, e.g. Render):
   - Autoflush disabled on the session -- nothing implicitly flushes/round-trips
     while we build large batches in Python.
   - Status changes on seats are done with 4 set-based UPDATE ... WHERE
-    statements instead of touching 5,500 ORM objects individually.
+    statements instead of touching 5,000 ORM objects individually.
   - IDs needed for foreign keys are fetched with narrow, single-column
     SELECTs (Department.id, Project.id, ...) instead of `.all()` on full
     ORM objects.

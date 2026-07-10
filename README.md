@@ -69,7 +69,7 @@ To boot up the entire stack (Database, Backend API, and Vite React Frontend) wit
     docker-compose up --build
     ```
 3.  **Create migrations & seed the database**:
-    To initialize tables and populate 5,000 employees, 350 projects, 5,500 seats, and 40 departments (approx. 90% occupancy):
+    To initialize tables and populate 5,000 employees, 350 projects, 5,000 seats, and 40 departments (approx. 90% occupancy):
     ```bash
     # Exec into backend container and run migrations/seeding
     docker-compose exec backend alembic revision --autogenerate -m "initial_schema"
