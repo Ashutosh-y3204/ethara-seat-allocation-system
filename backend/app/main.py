@@ -116,3 +116,24 @@ def health_check():
         "app_name": settings.app_name,
         "version": "1.0.0",
     }
+
+
+# Startup event
+@app.on_event("startup")
+def on_startup():
+    from app.database import Base, engine, SessionLocal
+    from app.models.seat import Seat
+    Base.metadata.create_all(bind=engine)
+    
+    db = SessionLocal()
+    try:
+        seat_count = db.query(Seat).count()
+        if seat_count == 0:
+            logger.info("Database is empty. Running auto-seeder...")
+            from seed import seed_db
+            seed_db()
+            logger.info("Auto-seeding completed successfully!")
+    except Exception as e:
+        logger.error(f"Error during startup check: {e}")
+    finally:
+        db.close()
