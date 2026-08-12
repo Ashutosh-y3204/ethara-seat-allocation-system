@@ -14,7 +14,18 @@ export const Employees = () => {
   
   // List State
   const [employees, setEmployees] = useState([]);
-  const [departments, setDepartments] = useState([]);
+  const [departments, setDepartments] = useState([
+    { id: 1, name: 'Engineering', code: 'ENG' },
+    { id: 2, name: 'Human Resources', code: 'HR' },
+    { id: 3, name: 'Product Management', code: 'PMO' },
+    { id: 4, name: 'Finance', code: 'FIN' },
+    { id: 5, name: 'Operations', code: 'OPS' },
+    { id: 6, name: 'Marketing', code: 'MKT' },
+    { id: 7, name: 'Design', code: 'DES' },
+    { id: 8, name: 'Quality Assurance', code: 'QA' },
+    { id: 9, name: 'DevOps', code: 'DEV' },
+    { id: 10, name: 'Sales', code: 'SAL' },
+  ]);
   const [total, setTotal] = useState(0);
   const [page, setPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
@@ -46,9 +57,11 @@ export const Employees = () => {
     const fetchDepts = async () => {
       try {
         const res = await api.get('/api/employees/departments');
-        setDepartments(res.data);
+        if (Array.isArray(res.data) && res.data.length > 0) {
+          setDepartments(res.data);
+        }
       } catch (err) {
-        console.error('Failed to load departments', err);
+        console.error('Failed to load departments, using fallback list', err);
       }
     };
     fetchDepts();
