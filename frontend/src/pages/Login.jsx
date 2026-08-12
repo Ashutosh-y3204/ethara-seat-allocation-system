@@ -24,9 +24,19 @@ export const Login = () => {
     }
   };
 
-  const prefillCredentials = (email, password) => {
+  const quickLogin = async (email, password) => {
     setValue('email', email);
     setValue('password', password);
+    setError('');
+    setLoading(true);
+    try {
+      await login(email, password);
+      navigate('/');
+    } catch (err) {
+      setError(err);
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -115,34 +125,34 @@ export const Login = () => {
             <div className="grid grid-cols-2 gap-2 text-xs">
               <button
                 type="button"
-                onClick={() => prefillCredentials('admin@ethara.com', 'password123')}
-                className="p-2 bg-slate-850 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white rounded-lg text-left transition-all"
+                onClick={() => quickLogin('admin@ethara.com', 'password123')}
+                className="p-2 bg-slate-850 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white rounded-lg text-left transition-all cursor-pointer"
               >
-                <div className="font-semibold text-primary-400">Admin</div>
+                <div className="font-semibold text-primary-400">Admin (1-Click)</div>
                 <div className="text-[10px] text-slate-500">admin@ethara.com</div>
               </button>
               <button
                 type="button"
-                onClick={() => prefillCredentials('hr@ethara.com', 'password123')}
-                className="p-2 bg-slate-850 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white rounded-lg text-left transition-all"
+                onClick={() => quickLogin('hr@ethara.com', 'password123')}
+                className="p-2 bg-slate-850 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white rounded-lg text-left transition-all cursor-pointer"
               >
-                <div className="font-semibold text-teal-400">HR Executive</div>
+                <div className="font-semibold text-teal-400">HR Exec (1-Click)</div>
                 <div className="text-[10px] text-slate-500">hr@ethara.com</div>
               </button>
               <button
                 type="button"
-                onClick={() => prefillCredentials('pm@ethara.com', 'password123')}
-                className="p-2 bg-slate-850 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white rounded-lg text-left transition-all"
+                onClick={() => quickLogin('pm@ethara.com', 'password123')}
+                className="p-2 bg-slate-850 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white rounded-lg text-left transition-all cursor-pointer"
               >
-                <div className="font-semibold text-indigo-400">Project Manager</div>
+                <div className="font-semibold text-indigo-400">PM (1-Click)</div>
                 <div className="text-[10px] text-slate-500">pm@ethara.com</div>
               </button>
               <button
                 type="button"
-                onClick={() => prefillCredentials('employee@ethara.com', 'password123')}
-                className="p-2 bg-slate-850 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white rounded-lg text-left transition-all"
+                onClick={() => quickLogin('employee@ethara.com', 'password123')}
+                className="p-2 bg-slate-850 hover:bg-slate-800 border border-slate-800 text-slate-300 hover:text-white rounded-lg text-left transition-all cursor-pointer"
               >
-                <div className="font-semibold text-slate-400">Standard Employee</div>
+                <div className="font-semibold text-slate-400">Employee (1-Click)</div>
                 <div className="text-[10px] text-slate-500">employee@ethara.com</div>
               </button>
             </div>
