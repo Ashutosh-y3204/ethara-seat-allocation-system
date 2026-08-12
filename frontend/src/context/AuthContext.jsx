@@ -4,28 +4,37 @@ import api from '../services/api';
 const AuthContext = createContext(null);
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const [user, setUser] = useState(() => {
+    try {
+      const stored = localStorage.getItem('user');
+      return stored ? JSON.parse(stored) : null;
+    } catch {
+      return null;
+    }
+  });
+  const [loading, setLoading] = useState(false);
 
-  // Initialize and check if user session exists
+  // Background refresh of user session without blocking initial UI render
   useEffect(() => {
-    const initAuth = async () => {
+    const refreshProfile = async () => {
       const accessToken = localStorage.getItem('access_token');
       if (accessToken) {
         try {
-          // Fetch current user details
           const res = await api.get('/api/auth/me');
           setUser(res.data);
+          localStorage.setItem('user', JSON.stringify(res.data));
         } catch (err) {
-          console.error('Failed to load user profile on startup', err);
-          // Token expired or invalid, interceptor will clear and redirect if needed
-          setUser(null);
+          if (err.response?.status === 401) {
+            setUser(null);
+            localStorage.removeItem('user');
+            localStorage.removeItem('access_token');
+            localStorage.removeItem('refresh_token');
+          }
         }
       }
-      setLoading(false);
     };
 
-    initAuth();
+    refreshProfile();
   }, []);
 
   const login = async (email, password) => {
@@ -39,12 +48,9 @@ export const AuthProvider = ({ children }) => {
       
       const userMeta = { email, role, name, employee_id };
       localStorage.setItem('user', JSON.stringify(userMeta));
-
-      // Fetch full details
-      const profileRes = await api.get('/api/auth/me');
-      setUser(profileRes.data);
+      setUser(userMeta);
       setLoading(false);
-      return profileRes.data;
+      return userMeta;
     } catch (err) {
       setLoading(false);
       throw err.response?.data?.detail || 'Invalid credentials. Please try again.';

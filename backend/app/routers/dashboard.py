@@ -27,14 +27,24 @@ def get_dashboard_analytics(
     thirty_days_ago = today - timedelta(days=30)
     six_months_ago = today - timedelta(days=180)
 
-    # 1. KPI Counts
+    # 1. Consolidated Seat KPIs in 1 fast query
+    seat_stats = db.query(
+        func.count(Seat.id).label("total"),
+        func.sum(case((Seat.status == "Occupied", 1), else_=0)).label("occupied"),
+        func.sum(case((Seat.status == "Available", 1), else_=0)).label("available"),
+        func.sum(case((Seat.status == "Reserved", 1), else_=0)).label("reserved"),
+        func.sum(case((Seat.status == "Maintenance", 1), else_=0)).label("maintenance"),
+    ).first()
+
+    total_seats = (seat_stats.total if seat_stats else 0) or 0
+    occupied_seats = (seat_stats.occupied if seat_stats else 0) or 0
+    available_seats = (seat_stats.available if seat_stats else 0) or 0
+    reserved_seats = (seat_stats.reserved if seat_stats else 0) or 0
+    maintenance_seats = (seat_stats.maintenance if seat_stats else 0) or 0
+
+    # 2. Employee & Project counts
     total_employees = db.query(func.count(Employee.id)).filter(Employee.status == "Active").scalar() or 0
     total_projects = db.query(func.count(Project.id)).scalar() or 0
-    total_seats = db.query(func.count(Seat.id)).scalar() or 0
-    occupied_seats = db.query(func.count(Seat.id)).filter(Seat.status == "Occupied").scalar() or 0
-    available_seats = db.query(func.count(Seat.id)).filter(Seat.status == "Available").scalar() or 0
-    reserved_seats = db.query(func.count(Seat.id)).filter(Seat.status == "Reserved").scalar() or 0
-    maintenance_seats = db.query(func.count(Seat.id)).filter(Seat.status == "Maintenance").scalar() or 0
     
     new_joiners_count = db.query(func.count(Employee.id)).filter(
         Employee.joining_date >= thirty_days_ago,
