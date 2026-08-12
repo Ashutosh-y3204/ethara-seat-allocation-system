@@ -13,9 +13,13 @@ export const Seats = () => {
   const [viewMode, setViewMode] = useState('map');
   
   // Metadata drop downs
-  const [metadata, setMetadata] = useState({ buildings: [], floors: [], zones: [] });
-  const [selectedBld, setSelectedBld] = useState('All');
-  const [selectedFlr, setSelectedFlr] = useState('All');
+  const [metadata, setMetadata] = useState({ 
+    buildings: ['HQ Tower', 'Nexus Centre', 'Apex Plaza', 'Innovation Lab'], 
+    floors: ['Floor 1', 'Floor 2', 'Floor 3', 'Floor 4', 'Floor 5'], 
+    zones: ['Zone A', 'Zone B', 'Zone C', 'Zone D'] 
+  });
+  const [selectedBld, setSelectedBld] = useState('HQ Tower');
+  const [selectedFlr, setSelectedFlr] = useState('Floor 1');
   const [selectedZn, setSelectedZn] = useState('All');
 
   // Map Seats Data

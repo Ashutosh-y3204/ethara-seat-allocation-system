@@ -1,6 +1,6 @@
 from typing import Optional, Tuple, List, Dict, Any
 from sqlalchemy.orm import Session
-from sqlalchemy import or_, desc, asc
+from sqlalchemy import or_, desc, asc, func
 from datetime import datetime
 
 from app.models.employee import Employee
@@ -91,10 +91,25 @@ class EmployeeRepository:
         else:
             query = query.order_by(asc(sort_column))
 
-        # Total count
-        total = query.count()
+        # Fast total count on Employee table without computing expensive 4-table outer joins
+        count_query = db.query(func.count(Employee.id))
+        if department_id:
+            count_query = count_query.filter(Employee.department_id == department_id)
+        if status:
+            count_query = count_query.filter(Employee.status == status)
+        if search:
+            search_filter = f"%{search}%"
+            count_query = count_query.filter(
+                or_(
+                    Employee.name.ilike(search_filter),
+                    Employee.email.ilike(search_filter),
+                    Employee.employee_id.ilike(search_filter),
+                    Employee.designation.ilike(search_filter)
+                )
+            )
+        total = count_query.scalar() or 0
 
-        # Pagination
+        # Pagination for the current page
         offset = (page - 1) * size
         results = query.offset(offset).limit(size).all()
 

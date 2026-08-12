@@ -148,27 +148,42 @@ def get_dashboard_analytics(
     ]
 
     # 6. New Joiners (Last 10 employees by joining date)
-    joiners_query = db.query(
-        Employee,
-        Seat.seat_number.label("assigned_seat"),
-        Project.name.label("assigned_project")
-    ).outerjoin(
-        SeatAllocation, (SeatAllocation.employee_id == Employee.id) & (SeatAllocation.is_active == True)
-    ).outerjoin(
-        Seat, Seat.id == SeatAllocation.seat_id
-    ).outerjoin(
-        ProjectMembership, (ProjectMembership.employee_id == Employee.id) & (ProjectMembership.is_active == True)
-    ).outerjoin(
-        Project, Project.id == ProjectMembership.project_id
-    ).filter(
+    top_joiners = db.query(Employee).filter(
         Employee.status == "Active"
     ).order_by(
         Employee.joining_date.desc(),
         Employee.id.desc()
     ).limit(10).all()
 
+    joiner_ids = [e.id for e in top_joiners]
+    seat_map = {}
+    proj_map = {}
+
+    if joiner_ids:
+        seats_q = db.query(
+            SeatAllocation.employee_id,
+            Seat.seat_number
+        ).join(
+            Seat, Seat.id == SeatAllocation.seat_id
+        ).filter(
+            SeatAllocation.employee_id.in_(joiner_ids),
+            SeatAllocation.is_active == True
+        ).all()
+        seat_map = {row.employee_id: row.seat_number for row in seats_q}
+
+        proj_q = db.query(
+            ProjectMembership.employee_id,
+            Project.name
+        ).join(
+            Project, Project.id == ProjectMembership.project_id
+        ).filter(
+            ProjectMembership.employee_id.in_(joiner_ids),
+            ProjectMembership.is_active == True
+        ).all()
+        proj_map = {row.employee_id: row.name for row in proj_q}
+
     new_joiners = []
-    for emp, seat, proj in joiners_query:
+    for emp in top_joiners:
         new_joiners.append({
             "id": emp.id,
             "employee_id": emp.employee_id,
@@ -181,8 +196,8 @@ def get_dashboard_analytics(
             "role": emp.role,
             "status": emp.status,
             "department": emp.department,
-            "assigned_seat": seat,
-            "assigned_project": proj
+            "assigned_seat": seat_map.get(emp.id),
+            "assigned_project": proj_map.get(emp.id)
         })
 
     return {
