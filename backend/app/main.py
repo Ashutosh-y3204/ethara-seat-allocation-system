@@ -27,7 +27,13 @@ app = FastAPI(
 # CORS
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Change this to your frontend URL in production
+    allow_origins=[
+        "https://ethara-seat-allocation-system.vercel.app",
+        "http://localhost:5173",
+        "http://localhost:3000",
+        "http://127.0.0.1:5173",
+    ],
+    allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
     allow_methods=["*"],
     allow_headers=["*"],
@@ -44,11 +50,19 @@ async def exception_handler_middleware(request: Request, call_next):
             f"Unhandled exception during request {request.url.path}: {exc}",
             exc_info=True,
         )
+        origin = request.headers.get("origin", "*")
+        headers = {
+            "Access-Control-Allow-Origin": origin,
+            "Access-Control-Allow-Credentials": "true",
+            "Access-Control-Allow-Headers": "*",
+            "Access-Control-Allow-Methods": "*",
+        }
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={
-                "detail": "An internal server error occurred. Please contact the administrator."
+                "detail": f"An internal server error occurred: {str(exc)}"
             },
+            headers=headers,
         )
 
 
