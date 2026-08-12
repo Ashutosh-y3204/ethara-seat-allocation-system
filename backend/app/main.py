@@ -32,6 +32,7 @@ app.add_middleware(
         "http://localhost:5173",
         "http://localhost:3000",
         "http://127.0.0.1:5173",
+        "http://127.0.0.1:3000",
     ],
     allow_origin_regex=r"https://.*\.vercel\.app",
     allow_credentials=True,
@@ -39,31 +40,27 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Exception handling middleware
-@app.middleware("http")
-async def exception_handler_middleware(request: Request, call_next):
-    try:
-        response = await call_next(request)
-        return response
-    except Exception as exc:
-        logger.error(
-            f"Unhandled exception during request {request.url.path}: {exc}",
-            exc_info=True,
-        )
-        origin = request.headers.get("origin", "*")
-        headers = {
-            "Access-Control-Allow-Origin": origin,
-            "Access-Control-Allow-Credentials": "true",
-            "Access-Control-Allow-Headers": "*",
-            "Access-Control-Allow-Methods": "*",
-        }
-        return JSONResponse(
-            status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
-            content={
-                "detail": f"An internal server error occurred: {str(exc)}"
-            },
-            headers=headers,
-        )
+# Global Exception Handler
+@app.exception_handler(Exception)
+async def global_exception_handler(request: Request, exc: Exception):
+    logger.error(
+        f"Unhandled exception during request {request.url.path}: {exc}",
+        exc_info=True,
+    )
+    origin = request.headers.get("origin", "https://ethara-seat-allocation-system.vercel.app")
+    headers = {
+        "Access-Control-Allow-Origin": origin,
+        "Access-Control-Allow-Credentials": "true",
+        "Access-Control-Allow-Headers": "*",
+        "Access-Control-Allow-Methods": "*",
+    }
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={
+            "detail": f"An internal server error occurred: {str(exc)}"
+        },
+        headers=headers,
+    )
 
 
 # Request logging middleware
